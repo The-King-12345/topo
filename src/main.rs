@@ -1,4 +1,5 @@
 mod cli;
+mod network;
 mod ui;
 
 use clap::Parser;
@@ -9,7 +10,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match &cli.command {
         Commands::Show => {
-            ui::draw_ui()?;
+            let my_network = network::Network::load();
+            ui::draw_ui(&my_network)?;
         }
     }
 

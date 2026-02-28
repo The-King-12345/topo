@@ -7,14 +7,16 @@ use ratatui::{
     backend::CrosstermBackend,
     style::Color,
     widgets::{
-        canvas::{Canvas, Line, Rectangle},
+        canvas::{Canvas, Rectangle},
         Block,
     },
     Terminal,
 };
 use std::io;
 
-pub fn draw_ui() -> Result<(), io::Error> {
+use crate::network::Network;
+
+pub fn draw_ui(network: &Network) -> Result<(), io::Error> {
     enable_raw_mode()?;
     let mut stdout = io::stdout();
     execute!(stdout, EnterAlternateScreen)?;
@@ -24,14 +26,27 @@ pub fn draw_ui() -> Result<(), io::Error> {
     loop {
         terminal.draw(|f| {
             let area = f.area();
+            let usable_height = area.height.saturating_sub(2).max(1) as f64;
+            let units_per_row = 180.0 / usable_height;
             let canvas = Canvas::default()
                 .block(Block::bordered().title("Network Topology Map"))
                 .x_bounds([-180.0, 180.0])
                 .y_bounds([-90.0, 90.0])
                 .paint(|ctx| {
                     ctx.layer();
-                    ctx.draw(&Line { x1: 0.0, y1: 10.0, x2: 10.0, y2: 10.0, color: Color::White });
-                    ctx.draw(&Rectangle { x: 10.0, y: 20.0, width: 10.0, height: 10.0, color: Color::Red });
+                    
+                    for (ip, host) in &network.hosts {
+                        ctx.draw(&Rectangle {
+                            x: host.x,
+                            y: host.y,
+                            width: 10.0,
+                            height: 10.0,
+                            color: Color::Green,
+                        });
+
+                        ctx.print(host.x, host.y - (units_per_row * 2.0), host.host.clone());
+                        ctx.print(host.x, host.y - (units_per_row * 3.5), ip.clone());  
+                    }
                 });
             f.render_widget(canvas, area);
         })?;
