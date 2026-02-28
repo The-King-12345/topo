@@ -25,14 +25,18 @@ pub fn draw_ui(network: &Network) -> Result<(), io::Error> {
 
     let mut pan_x = 0.0;
     let mut pan_y = 0.0;
-    let pan_speed = 10.0;
+    let pan_speed = 8.0;
 
     loop {
         terminal.draw(|f| {
             let area = f.area();
             
-            let view_width = area.width as f64 * 2.0;
-            let view_height = area.height as f64 * 4.0;
+            let inner_width = area.width.saturating_sub(2).max(1) as f64;
+            let inner_height = area.height.saturating_sub(2).max(1) as f64;
+
+            let view_width = inner_width * 2.0;
+            let view_height = inner_height * 4.0;
+
             let half_width = view_width / 2.0;
             let half_height = view_height / 2.0;
 
@@ -44,8 +48,8 @@ pub fn draw_ui(network: &Network) -> Result<(), io::Error> {
                     ctx.layer();
                     
                     for (ip, host) in &network.hosts {
-                        let box_width = 11.0;
-                        let box_height = 11.0;
+                        let box_width = 8.0;
+                        let box_height = 8.0;
 
                         let bottom_left_x = host.x - (box_width / 2.0);
                         let bottom_left_y = host.y - (box_height / 2.0);
@@ -58,8 +62,8 @@ pub fn draw_ui(network: &Network) -> Result<(), io::Error> {
                             color: Color::Green,
                         });
 
-                        ctx.print(bottom_left_x, bottom_left_y - 9.0, host.host.clone());
-                        ctx.print(bottom_left_x, bottom_left_y - 13.0, ip.clone());  
+                        ctx.print(bottom_left_x, bottom_left_y - 8.0, host.host.clone());
+                        ctx.print(bottom_left_x, bottom_left_y - 12.0, ip.clone());
                     }
                 });
             f.render_widget(canvas, area);
