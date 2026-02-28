@@ -1,0 +1,21 @@
+['10.100.25.1']         # table names are string literals to avoid hierarchy
+host = 'mario'
+# later things
+# type = 'router'
+# services = []
+# ports = []
+
+['10.100.25.5']
+host = 'bowser'
+
+['10.100.25.10']
+host = 'donkeykong'
+
+['10.100.25.43']
+host = 'peach'
+
+['10.100.25.68']
+host = 'toad'
+
+['10.100.25.114']
+host = 'luigi'
