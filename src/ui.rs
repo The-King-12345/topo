@@ -39,7 +39,7 @@ pub fn draw_ui() -> Result<(), io::Error> {
         if event::poll(std::time::Duration::from_millis(16))? {
             if let event::Event::Key(key) = event::read()? {
                 if key.code == KeyCode::Char('q') { break; }
-                if ((key.code == KeyCode::Char('c') || key.code == KeyCode::char('C')) &&
+                if ((key.code == KeyCode::Char('c') || key.code == KeyCode::Char('C')) &&
                     key.modifiers.contains(KeyModifiers::CONTROL))
                 {
                     break;
