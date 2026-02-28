@@ -108,3 +108,5 @@ flake.lock
 # Added by cargo
 
 /target
+
+network.toml
