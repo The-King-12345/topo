@@ -1,13 +1,17 @@
+mod cli;
+mod ui;
+
 use clap::Parser;
+use cli::{Cli, Commands};
 
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-struct Args {
-    #[arg(short, long)]
-    ip: String,
-}
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let cli = Cli::parse();
 
-fn main() {
-    let args = Args::parse();
-    println!("IP: {}", args.ip);
+    match &cli.command {
+        Commands::Show => {
+            ui::draw_ui()?;
+        }
+    }
+
+    Ok(())
 }
