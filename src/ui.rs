@@ -15,7 +15,6 @@ use std::io;
 use crate::network::Network;
 
 fn apply_pan<'a>(lines: Vec<Line<'a>>, pan_x: i32, pan_y: i32) -> Vec<Line<'a>> {
-    // Vertical pan
     let lines = if pan_y >= 0 {
         let skip = (pan_y as usize).min(lines.len());
         lines.into_iter().skip(skip).collect::<Vec<_>>()
@@ -26,7 +25,6 @@ fn apply_pan<'a>(lines: Vec<Line<'a>>, pan_x: i32, pan_y: i32) -> Vec<Line<'a>> 
         padded
     };
 
-    // Horizontal pan
     lines
         .into_iter()
         .map(|line| {
@@ -62,11 +60,16 @@ fn apply_pan<'a>(lines: Vec<Line<'a>>, pan_x: i32, pan_y: i32) -> Vec<Line<'a>> 
 }
 
 fn build_diagram<'a>(network: &Network) -> Vec<Line<'a>> {
-    // Separate router (.1) from regular hosts
     let router_entry = network.hosts.iter().find(|(ip, _)| ip.ends_with(".1"));
-    let hosts: Vec<(&String, &crate::network::HostData)> = network.hosts.iter()
+    let mut hosts: Vec<(&String, &crate::network::HostData)> = network.hosts.iter()
         .filter(|(ip, _)| !ip.ends_with(".1"))
         .collect();
+    hosts.sort_by_key(|(ip, _)| {
+        ip.split('.')
+        .last()
+        .and_then(|o| o.parse::<u8>().ok())
+        .unwrap_or(0)
+    });
     let count = hosts.len();
 
     let cyan = Style::default().fg(Color::Cyan);
@@ -74,17 +77,16 @@ fn build_diagram<'a>(network: &Network) -> Vec<Line<'a>> {
     let gray = Style::default().fg(Color::DarkGray);
 
     let col_width = 20usize;
-    let box_inner_width = col_width - 4; // accounts for "  │...│ " padding
+    let box_inner_width = col_width - 4; 
     let inner = "─".repeat(box_inner_width);
 
-    // How far from the left edge the switch should be centered
     let total_width = col_width * count;
     let switch_offset = if count > 0 { (total_width / 2).saturating_sub(8) } else { 0 };
     let switch_pad = " ".repeat(switch_offset);
 
     let mut lines: Vec<Line<'a>> = Vec::new();
 
-    // ── ROUTER ──────────────────────────────────────────────
+    // router
     let (router_ip_str, router_host_str) = match router_entry {
         Some((ip, data)) => (ip.as_str(), data.host.as_str()),
         None => ("?.?.?.1", "ROUTER"),
@@ -109,13 +111,13 @@ fn build_diagram<'a>(network: &Network) -> Vec<Line<'a>> {
         Span::styled("└──────────────┘", cyan),
     ]));
 
-    // ── TRUNK WIRE ───────────────────────────────────────────
+    // trunk wire
     lines.push(Line::from(vec![
         Span::raw(switch_pad.clone()),
         Span::styled("       │        ", gray),
     ]));
 
-    // ── HORIZONTAL BUS ───────────────────────────────────────
+    // horizontal bus
     if count == 0 {
         return lines;
     }
@@ -146,7 +148,7 @@ fn build_diagram<'a>(network: &Network) -> Vec<Line<'a>> {
 
     lines.push(Line::from(Span::styled(bus, gray)));
 
-    // ── DROP WIRES ───────────────────────────────────────────
+    // drop wires
     let drop: String = hosts
         .iter()
         .map(|_| {
@@ -159,15 +161,13 @@ fn build_diagram<'a>(network: &Network) -> Vec<Line<'a>> {
     lines.push(Line::from(Span::styled(drop.clone(), gray)));
     lines.push(Line::from(Span::styled(drop, gray)));
 
-    // ── HOST BOXES ───────────────────────────────────────────
-    // Top border
+    // host boxes
     let top: String = hosts
         .iter()
         .map(|_| format!("  ┌{}┐ ", inner))
         .collect();
     lines.push(Line::from(Span::styled(top, green)));
 
-    // Hostname row
     let name_row: Line = Line::from(
         hosts
             .iter()
@@ -180,7 +180,6 @@ fn build_diagram<'a>(network: &Network) -> Vec<Line<'a>> {
     );
     lines.push(name_row);
 
-    // IP row (inside the box)
     let ip_inner_row: Line = Line::from(
         hosts
             .iter()
@@ -193,7 +192,6 @@ fn build_diagram<'a>(network: &Network) -> Vec<Line<'a>> {
     );
     lines.push(ip_inner_row);
 
-    // Bottom border
     let bot: String = hosts
         .iter()
         .map(|_| format!("  └{}┘ ", inner))
