@@ -17,5 +17,10 @@ pub enum Commands {
         address: String,
         #[arg(value_name = "hostname")]
         host: String,
+    },
+    #[command(about = "Scan the network using rustscan to discover hosts")]
+    Scan {
+        #[arg(value_name = "target", help = "The IP range or CIDR to scan (e.g. 192.168.1.0/24)")]
+        target: String,
     }
 }

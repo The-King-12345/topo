@@ -13,10 +13,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let my_network = network::Network::load();
             ui::draw_ui(&my_network)?;
         }
-        Commands::Add { address, host }=> {
+        Commands::Add { address, host } => {
             network::Network::add(address, host)?;
         }
+        Commands::Scan { target } => {
+            let my_network = network::Network::load();
+            my_network.scan_and_fill(target)?; 
+        }
     }
-    
     Ok(())
 }
