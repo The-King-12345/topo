@@ -1,21 +1,26 @@
-['10.100.25.1']         # table names are string literals to avoid hierarchy
-host = 'mario'
-# later things
-# type = 'router'
-# services = []
-# ports = []
+[router]
+parent = 'internet'
 
-['10.100.25.5']
-host = 'bowser'
+[bowser]
+parent = 'switch'
 
-['10.100.25.10']
-host = 'donkeykong'
+[donkeykong]
+parent = 'switch'
 
-['10.100.25.43']
-host = 'peach'
+[peach]
+parent = 'switch'
 
-['10.100.25.68']
-host = 'toad'
+[wifi]
+parent = 'switch'
 
-['10.100.25.114']
-host = 'luigi'
+[workstation]
+parent = 'router'
+
+[switch]
+parent = 'router'
+
+[internet]
+parent = ''
+
+[phone]
+parent = 'wifi'

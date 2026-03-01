@@ -13,7 +13,7 @@ pub struct Network {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct HostData {
-    pub host: String, 
+    pub parent: String, 
     
     #[serde(default)]
     pub x: f64,
