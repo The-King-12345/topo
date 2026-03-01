@@ -1,0 +1,14 @@
+[ internet ]
+    |
+    |
+[ router ]
+    |________________________________________________
+    |					  |		 		            |		
+[ switch ]	  		[ workstation ]  			 [ wifi ]
+    |							         			|
+    |							         			|
+    |							         		[ phone ]
+    |
+    |______________________________
+    |			  |		          |
+[ peach ]   [ donkeykong ]    [ bowser ]
