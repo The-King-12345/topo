@@ -62,12 +62,15 @@ fn apply_pan<'a>(lines: Vec<Line<'a>>, pan_x: i32, pan_y: i32) -> Vec<Line<'a>> 
 }
 
 fn build_diagram<'a>(network: &Network) -> Vec<Line<'a>> {
-    let hosts: Vec<(&String, &crate::network::HostData)> = network.hosts.iter().collect();
+    // Separate router (.1) from regular hosts
+    let router_entry = network.hosts.iter().find(|(ip, _)| ip.ends_with(".1"));
+    let hosts: Vec<(&String, &crate::network::HostData)> = network.hosts.iter()
+        .filter(|(ip, _)| !ip.ends_with(".1"))
+        .collect();
     let count = hosts.len();
 
     let cyan = Style::default().fg(Color::Cyan);
     let green = Style::default().fg(Color::Green);
-    let yellow = Style::default().fg(Color::Yellow);
     let gray = Style::default().fg(Color::DarkGray);
 
     let col_width = 20usize;
@@ -81,14 +84,25 @@ fn build_diagram<'a>(network: &Network) -> Vec<Line<'a>> {
 
     let mut lines: Vec<Line<'a>> = Vec::new();
 
-    // ── SWITCH ──────────────────────────────────────────────
+    // ── ROUTER ──────────────────────────────────────────────
+    let (router_ip_str, router_host_str) = match router_entry {
+        Some((ip, data)) => (ip.as_str(), data.host.as_str()),
+        None => ("?.?.?.1", "ROUTER"),
+    };
+    let router_host_label = format!("{:^14}", router_host_str);
+    let router_ip_label   = format!("{:^14}", router_ip_str);
+
     lines.push(Line::from(vec![
         Span::raw(switch_pad.clone()),
         Span::styled("┌──────────────┐", cyan),
     ]));
     lines.push(Line::from(vec![
         Span::raw(switch_pad.clone()),
-        Span::styled("│    SWITCH    │", cyan),
+        Span::styled(format!("│{}│", router_host_label), cyan),
+    ]));
+    lines.push(Line::from(vec![
+        Span::raw(switch_pad.clone()),
+        Span::styled(format!("│{}│", router_ip_label), cyan),
     ]));
     lines.push(Line::from(vec![
         Span::raw(switch_pad.clone()),
@@ -166,24 +180,25 @@ fn build_diagram<'a>(network: &Network) -> Vec<Line<'a>> {
     );
     lines.push(name_row);
 
+    // IP row (inside the box)
+    let ip_inner_row: Line = Line::from(
+        hosts
+            .iter()
+            .map(|(ip, _)| {
+                let label = format!("{:^width$}", ip, width = box_inner_width);
+                let label = label[..label.len().min(box_inner_width)].to_string();
+                Span::styled(format!("  │{}│ ", label), green)
+            })
+            .collect::<Vec<_>>(),
+    );
+    lines.push(ip_inner_row);
+
     // Bottom border
     let bot: String = hosts
         .iter()
         .map(|_| format!("  └{}┘ ", inner))
         .collect();
     lines.push(Line::from(Span::styled(bot, green)));
-
-    // ── IP ADDRESSES ─────────────────────────────────────────
-    let ip_row: Line = Line::from(
-        hosts
-            .iter()
-            .map(|(ip, _)| {
-                let label = format!("{:^width$}", ip, width = col_width);
-                Span::styled(label, yellow)
-            })
-            .collect::<Vec<_>>(),
-    );
-    lines.push(ip_row);
 
     lines
 }
